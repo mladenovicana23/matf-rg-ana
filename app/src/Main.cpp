@@ -4,7 +4,27 @@
  * Start here...
  */
 
-class MainController final : public engine::core::Controller {};
+class MainController final : public engine::core::Controller {
+protected:
+    void initialize() override { engine::graphics::OpenGL::enable_depth_testing(); }
+
+    bool loop() override {
+        const auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
+
+        if (platform->key(engine::platform::KeyId::KEY_ESCAPE).state() ==
+            engine::platform::Key::State::JustPressed) { return false; }
+
+        return true;
+    }
+
+    void update() override {}
+
+    void begin_draw() override { engine::graphics::OpenGL::clear_buffers(); }
+
+    void draw() override {}
+
+    void end_draw() override { engine::core::Controller::get<engine::platform::PlatformController>()->swap_buffers(); }
+};
 
 class MainApp final : public engine::core::App {
 protected:
