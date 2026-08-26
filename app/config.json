@@ -4,6 +4,18 @@
       "classroom": {
         "path": "classroom/classroom.obj",
         "flip_uvs": false
+      },
+      "piano": {
+        "path": "piano/Piano.obj",
+        "flip_uvs": false
+      },
+      "piano2": {
+        "path": "piano2/model.obj",
+        "flip_uvs": false
+      },
+      "metronome": {
+        "path": "metronome/metronome.obj",
+        "flip_uvs": false
       }
     }
   },

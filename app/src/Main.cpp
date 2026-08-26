@@ -54,13 +54,41 @@ protected:
 
         auto shader = resources->shader("basic");
         auto classroom = resources->model("classroom");
+        auto piano = resources->model("piano");
+        auto piano2 = resources->model("piano2");
+        auto metronome = resources->model("metronome");
 
         shader->use();
         shader->set_mat4("projection", graphics->projection_matrix());
         shader->set_mat4("view", graphics->camera()->view_matrix());
-        shader->set_mat4("model", glm::mat4(1.0f));
 
+        shader->set_mat4("model", glm::mat4(1.0f));
         classroom->draw(shader);
+
+        glm::mat4 piano_model = glm::mat4(1.0f);
+        piano_model = glm::translate(piano_model, glm::vec3(-2.0f, 1.6f, -1.5f));
+        piano_model = glm::scale(piano_model, glm::vec3(0.05f));
+        shader->set_mat4("model", piano_model);
+        piano->draw(shader);
+
+        glm::mat4 piano2_model = glm::mat4(1.0f);
+
+        piano2_model = glm::translate(piano2_model, glm::vec3(2.5, 0.7f, -2.0f));
+
+        piano2_model = glm::rotate(piano2_model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+        piano2_model = glm::scale(piano2_model, glm::vec3(0.07f));
+
+        shader->set_mat4("model", piano2_model);
+        piano2->draw(shader);
+
+
+        glm::mat4 metronome_model = glm::mat4(1.0f);
+        metronome_model = glm::translate(metronome_model, glm::vec3(1.8f, 1.8f, -2.0f));
+        metronome_model = glm::scale(metronome_model, glm::vec3(1.2f));
+
+        shader->set_mat4("model", metronome_model);
+        metronome->draw(shader);
     }
 
     void end_draw() override { engine::core::Controller::get<engine::platform::PlatformController>()->swap_buffers(); }
