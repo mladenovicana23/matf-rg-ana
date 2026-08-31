@@ -57,6 +57,7 @@ protected:
         auto piano = resources->model("piano");
         auto piano2 = resources->model("piano2");
         auto metronome = resources->model("metronome");
+        auto window = resources->model("window");
 
         shader->use();
         shader->set_mat4("projection", graphics->projection_matrix());
@@ -89,6 +90,16 @@ protected:
 
         shader->set_mat4("model", metronome_model);
         metronome->draw(shader);
+
+
+        glm::mat4 windowModel = glm::mat4(1.0f);
+        windowModel = glm::translate(windowModel, glm::vec3(5.0f, 2.0f, 0.3f));
+        windowModel = glm::rotate(windowModel, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f)
+                );
+        windowModel = glm::scale(windowModel, glm::vec3(0.008f));
+
+        shader->set_mat4("model", windowModel);
+        window->draw(shader);
     }
 
     void end_draw() override { engine::core::Controller::get<engine::platform::PlatformController>()->swap_buffers(); }

@@ -16,6 +16,10 @@
       "metronome": {
         "path": "metronome/metronome.obj",
         "flip_uvs": false
+      },
+      "window": {
+        "path": "window/window_2x4_arched.obj",
+        "flip_uvs": false
       }
     }
   },
