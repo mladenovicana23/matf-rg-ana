@@ -58,6 +58,7 @@ protected:
         auto piano2 = resources->model("piano2");
         auto metronome = resources->model("metronome");
         auto window = resources->model("window");
+        auto painting = resources->model("painting");
 
         shader->use();
         shader->set_mat4("projection", graphics->projection_matrix());
@@ -100,6 +101,21 @@ protected:
 
         shader->set_mat4("model", windowModel);
         window->draw(shader);
+
+
+        glm::mat4 paintingModel = glm::mat4(1.0f);
+        paintingModel = glm::translate(paintingModel, glm::vec3(0.0f, 2.2f, -3.95f));
+        paintingModel = glm::rotate(
+                paintingModel,
+                glm::radians(180.0f),
+                glm::vec3(0.0f, 0.0f, 1.0f)
+                );
+        paintingModel = glm::scale(paintingModel, glm::vec3(0.009f));
+
+        shader->set_vec3("texture_tint", glm::vec3(1.0f));
+        shader->set_vec3("fallback_color", glm::vec3(1.0f));
+        shader->set_mat4("model", paintingModel);
+        painting->draw(shader);
     }
 
     void end_draw() override { engine::core::Controller::get<engine::platform::PlatformController>()->swap_buffers(); }

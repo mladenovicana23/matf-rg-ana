@@ -20,6 +20,10 @@
       "window": {
         "path": "window/window_2x4_arched.obj",
         "flip_uvs": false
+      },
+      "painting": {
+        "path": "painting/PlastilinPeizagh.obj",
+        "flip_uvs": false
       }
     }
   },
