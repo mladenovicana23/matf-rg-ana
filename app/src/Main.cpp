@@ -161,7 +161,7 @@ protected:
 
         glm::vec3 metronome_position = glm::vec3(1.8f, 1.8f, -2.0f);
 
-        if (metronome_event_active) { if (metronome_event_time < 2.0f) { metronome_position.x -= 0.3f; } else { metronome_position.x += 0.3f; } }
+        if (metronome_event_active) { if (metronome_event_time >= 1.0f && metronome_event_time < 3.0f) { metronome_position.x -= 0.3f; } else if (metronome_event_time >= 3.0f) { metronome_position.x += 0.3f; } }
 
         glm::mat4 metronome_model = glm::mat4(1.0f);
         metronome_model = glm::translate(
