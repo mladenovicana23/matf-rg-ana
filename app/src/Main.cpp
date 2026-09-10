@@ -1,12 +1,15 @@
 #include <engine/core/Engine.hpp>
 #include <engine/graphics/GraphicsController.hpp>
 
-/**
- * Start here...
- */
-
 class MainController final : public engine::core::Controller {
 protected:
+    bool point_light_enabled = true;
+    float point_light_x = 0.0f;
+    bool point_light_warm = true;
+
+    bool metronome_event_active = false;
+    float metronome_event_time = 0.0f;
+
     void initialize() override {
         engine::graphics::OpenGL::enable_depth_testing();
 
@@ -24,6 +27,23 @@ protected:
         if (platform->key(engine::platform::KeyId::KEY_ESCAPE).state() ==
             engine::platform::Key::State::JustPressed) { return false; }
 
+        if (platform->key(engine::platform::KEY_L).state() ==
+            engine::platform::Key::State::JustPressed) { point_light_enabled = !point_light_enabled; }
+
+        if (platform->key(engine::platform::KEY_M).state() ==
+            engine::platform::Key::State::JustPressed) {
+            metronome_event_active = true;
+            metronome_event_time = 0.0f;
+        }
+        if (platform->key(engine::platform::KEY_J).state() ==
+            engine::platform::Key::State::Pressed) { point_light_x -= 0.05f; }
+
+        if (platform->key(engine::platform::KEY_K).state() ==
+            engine::platform::Key::State::Pressed) { point_light_x += 0.05f; }
+
+        if (platform->key(engine::platform::KEY_C).state() ==
+            engine::platform::Key::State::JustPressed) { point_light_warm = !point_light_warm; }
+
         return true;
     }
 
@@ -33,18 +53,32 @@ protected:
 
         float dt = platform->dt();
 
-        if (platform->key(engine::platform::KEY_W).state() == engine::platform::Key::State::Pressed) { camera->move_camera(engine::graphics::Camera::Movement::FORWARD, dt); }
+        if (platform->key(engine::platform::KEY_W).state() ==
+            engine::platform::Key::State::Pressed) { camera->move_camera(engine::graphics::Camera::Movement::FORWARD, dt); }
 
-        if (platform->key(engine::platform::KEY_S).state() == engine::platform::Key::State::Pressed) { camera->move_camera(engine::graphics::Camera::Movement::BACKWARD, dt); }
+        if (platform->key(engine::platform::KEY_S).state() ==
+            engine::platform::Key::State::Pressed) { camera->move_camera(engine::graphics::Camera::Movement::BACKWARD, dt); }
 
-        if (platform->key(engine::platform::KEY_A).state() == engine::platform::Key::State::Pressed) { camera->move_camera(engine::graphics::Camera::Movement::LEFT, dt); }
+        if (platform->key(engine::platform::KEY_A).state() ==
+            engine::platform::Key::State::Pressed) { camera->move_camera(engine::graphics::Camera::Movement::LEFT, dt); }
 
-        if (platform->key(engine::platform::KEY_D).state() == engine::platform::Key::State::Pressed) { camera->move_camera(engine::graphics::Camera::Movement::RIGHT, dt); }
-
-
+        if (platform->key(engine::platform::KEY_D).state() ==
+            engine::platform::Key::State::Pressed) { camera->move_camera(engine::graphics::Camera::Movement::RIGHT, dt); }
     }
 
-    void update() override { update_camera(); }
+    void update() override {
+        update_camera();
+
+        if (metronome_event_active) {
+            auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
+            metronome_event_time += platform->dt();
+
+            if (metronome_event_time >= 4.0f) {
+                metronome_event_active = false;
+                metronome_event_time = 0.0f;
+            }
+        }
+    }
 
     void begin_draw() override { engine::graphics::OpenGL::clear_buffers(); }
 
@@ -109,23 +143,31 @@ protected:
         glm::mat4 piano_model = glm::mat4(1.0f);
         piano_model = glm::translate(piano_model, glm::vec3(-2.0f, 1.6f, -1.5f));
         piano_model = glm::scale(piano_model, glm::vec3(0.05f));
+
         shader->set_mat4("model", piano_model);
         piano->draw(shader);
 
         glm::mat4 piano2_model = glm::mat4(1.0f);
-
-        piano2_model = glm::translate(piano2_model, glm::vec3(2.5, 0.7f, -2.0f));
-
-        piano2_model = glm::rotate(piano2_model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
+        piano2_model = glm::translate(piano2_model, glm::vec3(2.5f, 0.7f, -2.0f));
+        piano2_model = glm::rotate(
+                piano2_model,
+                glm::radians(180.0f),
+                glm::vec3(0.0f, 1.0f, 0.0f)
+                );
         piano2_model = glm::scale(piano2_model, glm::vec3(0.07f));
 
         shader->set_mat4("model", piano2_model);
         piano2->draw(shader);
 
+        glm::vec3 metronome_position = glm::vec3(1.8f, 1.8f, -2.0f);
+
+        if (metronome_event_active) { if (metronome_event_time < 2.0f) { metronome_position.x -= 0.3f; } else { metronome_position.x += 0.3f; } }
 
         glm::mat4 metronome_model = glm::mat4(1.0f);
-        metronome_model = glm::translate(metronome_model, glm::vec3(1.8f, 1.8f, -2.0f));
+        metronome_model = glm::translate(
+                metronome_model,
+                metronome_position
+                );
         metronome_model = glm::scale(metronome_model, glm::vec3(1.2f));
 
         shader->set_vec3("fallback_color", glm::vec3(0.08f, 0.06f, 0.04f));
@@ -134,10 +176,12 @@ protected:
         shader->set_mat4("model", metronome_model);
         metronome->draw(shader);
 
-
         glm::mat4 windowModel = glm::mat4(1.0f);
         windowModel = glm::translate(windowModel, glm::vec3(5.0f, 2.0f, 0.3f));
-        windowModel = glm::rotate(windowModel, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f)
+        windowModel = glm::rotate(
+                windowModel,
+                glm::radians(-90.0f),
+                glm::vec3(0.0f, 1.0f, 0.0f)
                 );
         windowModel = glm::scale(windowModel, glm::vec3(0.008f));
 
@@ -168,7 +212,9 @@ class MainApp final : public engine::core::App {
 protected:
     void app_setup() override {
         auto main_controller = register_controller<MainController>();
-        main_controller->after(engine::core::Controller::get<engine::core::EngineControllersEnd>());
+        main_controller->after(
+                engine::core::Controller::get<engine::core::EngineControllersEnd>()
+                );
     }
 };
 
