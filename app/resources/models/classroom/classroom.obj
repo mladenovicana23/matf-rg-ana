@@ -3,6 +3,8 @@
 
 o classroom
 
+mtllib classroom.mtl
+
 # Floor vertices
 v -5.0 0.0 -4.0
 v  5.0 0.0 -4.0
@@ -27,6 +29,12 @@ v 5.0 0.0 -4.0
 v 5.0 4.0 -4.0
 v 5.0 4.0  4.0
 
+# Floor texture coordinates
+vt 0.0 0.0
+vt 1.0 0.0
+vt 1.0 1.0
+vt 0.0 1.0
+
 # Normals
 vn 0.0 1.0 0.0
 vn 0.0 0.0 1.0
@@ -34,10 +42,12 @@ vn 1.0 0.0 0.0
 vn -1.0 0.0 0.0
 
 # Floor
-f 1//1 3//1 2//1
-f 1//1 4//1 3//1
+usemtl parquet
+f 1/1/1 3/3/1 2/2/1
+f 1/1/1 4/4/1 3/3/1
 
 # Back wall
+usemtl wall
 f 5//2 6//2 7//2
 f 5//2 7//2 8//2
 
