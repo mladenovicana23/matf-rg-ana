@@ -93,6 +93,7 @@ protected:
         auto metronome = resources->model("metronome");
         auto window = resources->model("window");
         auto painting = resources->model("painting");
+        auto lamp = resources->model("lamp");
 
         shader->use();
         shader->set_mat4("projection", graphics->projection_matrix());
@@ -154,8 +155,8 @@ protected:
                 glm::radians(180.0f),
                 glm::vec3(0.0f, 1.0f, 0.0f)
                 );
-        piano2_model = glm::scale(piano2_model, glm::vec3(0.07f));
 
+        piano2_model = glm::scale(piano2_model, glm::vec3(0.07f));
         shader->set_mat4("model", piano2_model);
         piano2->draw(shader);
 
@@ -168,11 +169,10 @@ protected:
                 metronome_model,
                 metronome_position
                 );
-        metronome_model = glm::scale(metronome_model, glm::vec3(1.2f));
 
+        metronome_model = glm::scale(metronome_model, glm::vec3(1.2f));
         shader->set_vec3("fallback_color", glm::vec3(0.08f, 0.06f, 0.04f));
         shader->set_vec3("texture_tint", glm::vec3(1.0f));
-
         shader->set_mat4("model", metronome_model);
         metronome->draw(shader);
 
@@ -203,6 +203,15 @@ protected:
         shader->set_vec3("fallback_color", glm::vec3(1.0f));
         shader->set_mat4("model", paintingModel);
         painting->draw(shader);
+
+        glm::mat4 lampModel = glm::mat4(1.0f);
+        lampModel = glm::translate(lampModel, glm::vec3(-4.2f, 0.0f, -2.5f));
+        lampModel = glm::scale(lampModel, glm::vec3(0.35f));
+
+        shader->set_vec3("texture_tint", glm::vec3(1.0f));
+        shader->set_vec3("fallback_color", glm::vec3(1.0f));
+        shader->set_mat4("model", lampModel);
+        lamp->draw(shader);
     }
 
     void end_draw() override { engine::core::Controller::get<engine::platform::PlatformController>()->swap_buffers(); }

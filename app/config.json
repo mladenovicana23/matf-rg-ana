@@ -24,6 +24,10 @@
       "painting": {
         "path": "painting/PlastilinPeizagh.obj",
         "flip_uvs": false
+      },
+      "lamp": {
+        "path": "lamp/floor-lamp.obj",
+        "flip_uvs": false
       }
     }
   },
