@@ -64,8 +64,47 @@ protected:
         shader->set_mat4("projection", graphics->projection_matrix());
         shader->set_mat4("view", graphics->camera()->view_matrix());
 
+        shader->set_vec3(
+                "directional_direction",
+                glm::vec3(-0.4f, -1.0f, -0.6f)
+                );
+
+        shader->set_vec3(
+                "directional_color",
+                glm::vec3(0.55f, 0.55f, 0.55f)
+                );
+
+        shader->set_vec3(
+                "point_position",
+                glm::vec3(point_light_x, 3.0f, 0.0f)
+                );
+
+        if (point_light_enabled) {
+            if (point_light_warm) {
+                shader->set_vec3(
+                        "point_color",
+                        glm::vec3(0.8f, 0.7f, 0.55f)
+                        );
+            } else {
+                shader->set_vec3(
+                        "point_color",
+                        glm::vec3(0.45f, 0.65f, 1.0f)
+                        );
+            }
+        } else {
+            shader->set_vec3(
+                    "point_color",
+                    glm::vec3(0.0f)
+                    );
+        }
+
+        shader->set_vec3("fallback_color", glm::vec3(1.0f, 1.0f, 1.0f));
+        shader->set_vec3("texture_tint", glm::vec3(0.75f, 0.45f, 0.25f));
+
         shader->set_mat4("model", glm::mat4(1.0f));
         classroom->draw(shader);
+
+        shader->set_vec3("texture_tint", glm::vec3(1.0f, 1.0f, 1.0f));
 
         glm::mat4 piano_model = glm::mat4(1.0f);
         piano_model = glm::translate(piano_model, glm::vec3(-2.0f, 1.6f, -1.5f));
@@ -89,6 +128,9 @@ protected:
         metronome_model = glm::translate(metronome_model, glm::vec3(1.8f, 1.8f, -2.0f));
         metronome_model = glm::scale(metronome_model, glm::vec3(1.2f));
 
+        shader->set_vec3("fallback_color", glm::vec3(0.08f, 0.06f, 0.04f));
+        shader->set_vec3("texture_tint", glm::vec3(1.0f));
+
         shader->set_mat4("model", metronome_model);
         metronome->draw(shader);
 
@@ -99,6 +141,7 @@ protected:
                 );
         windowModel = glm::scale(windowModel, glm::vec3(0.008f));
 
+        shader->set_vec3("fallback_color", glm::vec3(0.35f, 0.18f, 0.08f));
         shader->set_mat4("model", windowModel);
         window->draw(shader);
 
