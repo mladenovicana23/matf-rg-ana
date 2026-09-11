@@ -1,5 +1,6 @@
 #include <engine/core/Engine.hpp>
 #include <engine/graphics/GraphicsController.hpp>
+#include <engine/graphics/Bloom.hpp>
 
 class MainController final : public engine::core::Controller {
 protected:
@@ -10,8 +11,18 @@ protected:
     bool metronome_event_active = false;
     float metronome_event_time = 0.0f;
 
+    engine::graphics::Bloom bloom;
+
     void initialize() override {
         engine::graphics::OpenGL::enable_depth_testing();
+
+        auto platform =
+                engine::core::Controller::get<engine::platform::PlatformController>();
+
+        bloom.initialize(
+                platform->window()->width(),
+                platform->window()->height()
+                );
 
         auto camera = engine::core::Controller::get<engine::graphics::GraphicsController>()->camera();
 
@@ -23,6 +34,7 @@ protected:
 
     bool loop() override {
         const auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
+
 
         if (platform->key(engine::platform::KeyId::KEY_ESCAPE).state() ==
             engine::platform::Key::State::JustPressed) { return false; }
@@ -80,13 +92,26 @@ protected:
         }
     }
 
-    void begin_draw() override { engine::graphics::OpenGL::clear_buffers(); }
+    void begin_draw() override {
+        auto platform =
+                engine::core::Controller::get<engine::platform::PlatformController>();
+
+        bloom.resize(
+                platform->window()->width(),
+                platform->window()->height()
+                );
+
+        bloom.begin_scene();
+    }
 
     void draw() override {
         auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
         auto resources = engine::core::Controller::get<engine::resources::ResourcesController>();
 
         auto shader = resources->shader("basic");
+        auto blur_shader = resources->shader("blur");
+        auto bloom_final_shader = resources->shader("bloom_final");
+
         auto classroom = resources->model("classroom");
         auto piano = resources->model("piano");
         auto piano2 = resources->model("piano2");
@@ -94,10 +119,14 @@ protected:
         auto window = resources->model("window");
         auto painting = resources->model("painting");
         auto lamp = resources->model("lamp");
+        auto bulb = resources->model("bulb");
 
         shader->use();
         shader->set_mat4("projection", graphics->projection_matrix());
         shader->set_mat4("view", graphics->camera()->view_matrix());
+
+        shader->set_bool("emissive", false);
+        shader->set_vec3("emissive_color", glm::vec3(0.0f));
 
         shader->set_vec3(
                 "directional_direction",
@@ -111,7 +140,7 @@ protected:
 
         shader->set_vec3(
                 "point_position",
-                glm::vec3(point_light_x, 3.0f, 0.0f)
+                glm::vec3(-4.2f + point_light_x, 2.005f, -2.5f)
                 );
 
         if (point_light_enabled) {
@@ -208,11 +237,65 @@ protected:
         lampModel = glm::translate(lampModel, glm::vec3(-4.2f, 0.0f, -2.5f));
         lampModel = glm::scale(lampModel, glm::vec3(0.35f));
 
+        shader->set_bool("emissive", false);
+        shader->set_vec3("emissive_color", glm::vec3(0.0f));
+
         shader->set_vec3("texture_tint", glm::vec3(1.0f));
         shader->set_vec3("fallback_color", glm::vec3(1.0f));
         shader->set_mat4("model", lampModel);
         lamp->draw(shader);
+
+        glm::mat4 bulbModel = glm::mat4(1.0f);
+
+        bulbModel = glm::translate(
+                bulbModel,
+                glm::vec3(-4.2f, 2.005f, -2.5f)
+                );
+
+        bulbModel = glm::scale(
+                bulbModel,
+                glm::vec3(0.15f)
+                );
+
+        shader->set_bool("emissive", point_light_enabled);
+
+        if (point_light_enabled) {
+            shader->set_vec3(
+                    "emissive_color",
+                    point_light_warm
+                        ? glm::vec3(15.0f, 12.0f, 7.0f)
+                        : glm::vec3(7.0f, 11.0f, 15.0f)
+                    );
+        } else {
+            shader->set_vec3(
+                    "emissive_color",
+                    glm::vec3(0.0f)
+                    );
+        }
+
+        shader->set_vec3(
+                "fallback_color",
+                glm::vec3(1.0f)
+                );
+
+        shader->set_vec3(
+                "texture_tint",
+                glm::vec3(1.0f)
+                );
+
+        shader->set_mat4("model", bulbModel);
+
+        bulb->draw(shader);
+
+        bloom.render(
+                blur_shader,
+                bloom_final_shader,
+                true,
+                1.0f
+                );
     }
+
+    void terminate() override { bloom.destroy(); }
 
     void end_draw() override { engine::core::Controller::get<engine::platform::PlatformController>()->swap_buffers(); }
 };

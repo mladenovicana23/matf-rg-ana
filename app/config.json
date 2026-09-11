@@ -28,6 +28,10 @@
       "lamp": {
         "path": "lamp/floor-lamp.obj",
         "flip_uvs": false
+      },
+      "bulb": {
+        "path": "bulb/bulb.obj",
+        "flip_uvs": false
       }
     }
   },

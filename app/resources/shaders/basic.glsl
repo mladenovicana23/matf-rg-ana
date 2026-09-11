@@ -24,7 +24,8 @@ void main() {
 //#shader fragment
 #version 330 core
 
-out vec4 FragColor;
+layout (location = 0) out vec4 FragColor;
+layout (location = 1) out vec4 BrightColor;
 
 in vec3 Normal;
 in vec3 FragPos;
@@ -40,6 +41,9 @@ uniform vec3 directional_color;
 
 uniform vec3 point_position;
 uniform vec3 point_color;
+
+uniform bool emissive;
+uniform vec3 emissive_color;
 
 void main() {
     vec3 object_color;
@@ -79,5 +83,16 @@ void main() {
 
     vec3 result = ambient + directional + point;
 
+    if (emissive) {
+        result += emissive_color;
+    }
+
     FragColor = vec4(result, 1.0);
+
+    if (emissive) {
+        BrightColor = vec4(emissive_color, 1.0);
+    }
+    else {
+        BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
+    }
 }
