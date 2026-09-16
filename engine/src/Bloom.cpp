@@ -77,14 +77,14 @@ void Bloom::render(
         ) const {
     bool horizontal = true;
     bool first_iteration = true;
-    const int amount = 10;
+    const int AMOUNT = 10;
 
     blur_shader->use();
     blur_shader->set_int("image", 0);
 
     OpenGL::set_depth_test(false);
 
-    for (int i = 0; i < amount; ++i) {
+    for (int i = 0; i < AMOUNT; ++i) {
         OpenGL::bind_framebuffer(m_pingpong_fbos[horizontal]);
 
         blur_shader->set_bool("horizontal", horizontal);

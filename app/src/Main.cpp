@@ -4,14 +4,14 @@
 
 class MainController final : public engine::core::Controller {
 protected:
-    bool point_light_enabled = true;
-    float point_light_x = 0.0f;
-    bool point_light_warm = true;
+    bool m_point_light_enabled = true;
+    float m_point_light_x = 0.0f;
+    bool m_point_light_warm = true;
 
-    bool metronome_event_active = false;
-    float metronome_event_time = 0.0f;
+    bool m_metronome_event_active = false;
+    float m_metronome_event_time = 0.0f;
 
-    engine::graphics::Bloom bloom;
+    engine::graphics::Bloom m_bloom;
 
     void initialize() override {
         engine::graphics::OpenGL::enable_depth_testing();
@@ -19,7 +19,7 @@ protected:
         auto platform =
                 engine::core::Controller::get<engine::platform::PlatformController>();
 
-        bloom.initialize(
+        m_bloom.initialize(
                 platform->window()->width(),
                 platform->window()->height()
                 );
@@ -40,21 +40,21 @@ protected:
             engine::platform::Key::State::JustPressed) { return false; }
 
         if (platform->key(engine::platform::KEY_L).state() ==
-            engine::platform::Key::State::JustPressed) { point_light_enabled = !point_light_enabled; }
+            engine::platform::Key::State::JustPressed) { m_point_light_enabled = !m_point_light_enabled; }
 
         if (platform->key(engine::platform::KEY_M).state() ==
             engine::platform::Key::State::JustPressed) {
-            metronome_event_active = true;
-            metronome_event_time = 0.0f;
+            m_metronome_event_active = true;
+            m_metronome_event_time = 0.0f;
         }
         if (platform->key(engine::platform::KEY_J).state() ==
-            engine::platform::Key::State::Pressed) { point_light_x -= 0.05f; }
+            engine::platform::Key::State::Pressed) { m_point_light_x -= 0.05f; }
 
         if (platform->key(engine::platform::KEY_K).state() ==
-            engine::platform::Key::State::Pressed) { point_light_x += 0.05f; }
+            engine::platform::Key::State::Pressed) { m_point_light_x += 0.05f; }
 
         if (platform->key(engine::platform::KEY_C).state() ==
-            engine::platform::Key::State::JustPressed) { point_light_warm = !point_light_warm; }
+            engine::platform::Key::State::JustPressed) { m_point_light_warm = !m_point_light_warm; }
 
         return true;
     }
@@ -81,13 +81,13 @@ protected:
     void update() override {
         update_camera();
 
-        if (metronome_event_active) {
+        if (m_metronome_event_active) {
             auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
-            metronome_event_time += platform->dt();
+            m_metronome_event_time += platform->dt();
 
-            if (metronome_event_time >= 4.0f) {
-                metronome_event_active = false;
-                metronome_event_time = 0.0f;
+            if (m_metronome_event_time >= 4.0f) {
+                m_metronome_event_active = false;
+                m_metronome_event_time = 0.0f;
             }
         }
     }
@@ -96,12 +96,12 @@ protected:
         auto platform =
                 engine::core::Controller::get<engine::platform::PlatformController>();
 
-        bloom.resize(
+        m_bloom.resize(
                 platform->window()->width(),
                 platform->window()->height()
                 );
 
-        bloom.begin_scene();
+        m_bloom.begin_scene();
     }
 
     void draw() override {
@@ -140,11 +140,11 @@ protected:
 
         shader->set_vec3(
                 "point_position",
-                glm::vec3(-4.2f + point_light_x, 2.005f, -2.5f)
+                glm::vec3(-4.2f + m_point_light_x, 2.005f, -2.5f)
                 );
 
-        if (point_light_enabled) {
-            if (point_light_warm) {
+        if (m_point_light_enabled) {
+            if (m_point_light_warm) {
                 shader->set_vec3(
                         "point_color",
                         glm::vec3(0.8f, 0.7f, 0.55f)
@@ -191,7 +191,7 @@ protected:
 
         glm::vec3 metronome_position = glm::vec3(1.8f, 1.8f, -2.0f);
 
-        if (metronome_event_active) { if (metronome_event_time >= 1.0f && metronome_event_time < 3.0f) { metronome_position.x -= 0.3f; } else if (metronome_event_time >= 3.0f) { metronome_position.x += 0.3f; } }
+        if (m_metronome_event_active) { if (m_metronome_event_time >= 1.0f && m_metronome_event_time < 3.0f) { metronome_position.x -= 0.3f; } else if (m_metronome_event_time >= 3.0f) { metronome_position.x += 0.3f; } }
 
         glm::mat4 metronome_model = glm::mat4(1.0f);
         metronome_model = glm::translate(
@@ -205,64 +205,58 @@ protected:
         shader->set_mat4("model", metronome_model);
         metronome->draw(shader);
 
-        glm::mat4 windowModel = glm::mat4(1.0f);
-        windowModel = glm::translate(windowModel, glm::vec3(5.0f, 2.0f, 0.3f));
-        windowModel = glm::rotate(
-                windowModel,
+        glm::mat4 window_model = glm::mat4(1.0f);
+        window_model = glm::translate(window_model, glm::vec3(5.0f, 2.0f, 0.3f));
+        window_model = glm::rotate(
+                window_model,
                 glm::radians(-90.0f),
                 glm::vec3(0.0f, 1.0f, 0.0f)
                 );
-        windowModel = glm::scale(windowModel, glm::vec3(0.008f));
+        window_model = glm::scale(window_model, glm::vec3(0.008f));
 
         shader->set_vec3("fallback_color", glm::vec3(0.35f, 0.18f, 0.08f));
-        shader->set_mat4("model", windowModel);
+        shader->set_mat4("model", window_model);
         window->draw(shader);
 
 
-        glm::mat4 paintingModel = glm::mat4(1.0f);
-        paintingModel = glm::translate(paintingModel, glm::vec3(0.0f, 2.2f, -3.95f));
-        paintingModel = glm::rotate(
-                paintingModel,
+        glm::mat4 painting_model = glm::mat4(1.0f);
+        painting_model = glm::translate(painting_model, glm::vec3(0.0f, 2.2f, -3.95f));
+        painting_model = glm::rotate(
+                painting_model,
                 glm::radians(180.0f),
                 glm::vec3(0.0f, 0.0f, 1.0f)
                 );
-        paintingModel = glm::scale(paintingModel, glm::vec3(0.009f));
+        painting_model = glm::scale(painting_model, glm::vec3(0.009f));
 
         shader->set_vec3("texture_tint", glm::vec3(1.0f));
         shader->set_vec3("fallback_color", glm::vec3(1.0f));
-        shader->set_mat4("model", paintingModel);
+        shader->set_mat4("model", painting_model);
         painting->draw(shader);
 
-        glm::mat4 lampModel = glm::mat4(1.0f);
-        lampModel = glm::translate(lampModel, glm::vec3(-4.2f, 0.0f, -2.5f));
-        lampModel = glm::scale(lampModel, glm::vec3(0.35f));
+        glm::mat4 lamp_model = glm::mat4(1.0f);
+        lamp_model = glm::translate(lamp_model, glm::vec3(-4.2f, 0.0f, -2.5f));
+        lamp_model = glm::scale(lamp_model, glm::vec3(0.35f));
 
         shader->set_bool("emissive", false);
         shader->set_vec3("emissive_color", glm::vec3(0.0f));
 
         shader->set_vec3("texture_tint", glm::vec3(1.0f));
         shader->set_vec3("fallback_color", glm::vec3(1.0f));
-        shader->set_mat4("model", lampModel);
+        shader->set_mat4("model", lamp_model);
         lamp->draw(shader);
 
-        glm::mat4 bulbModel = glm::mat4(1.0f);
+        glm::mat4 bulb_model = glm::mat4(1.0f);
 
-        bulbModel = glm::translate(
-                bulbModel,
-                glm::vec3(-4.2f, 2.005f, -2.5f)
-                );
+        bulb_model = glm::translate(bulb_model, glm::vec3(-4.2f, 2.005f, -2.5f));
 
-        bulbModel = glm::scale(
-                bulbModel,
-                glm::vec3(0.15f)
-                );
+        bulb_model = glm::scale(bulb_model, glm::vec3(0.15f));
 
-        shader->set_bool("emissive", point_light_enabled);
+        shader->set_bool("emissive", m_point_light_enabled);
 
-        if (point_light_enabled) {
+        if (m_point_light_enabled) {
             shader->set_vec3(
                     "emissive_color",
-                    point_light_warm
+                    m_point_light_warm
                         ? glm::vec3(15.0f, 12.0f, 7.0f)
                         : glm::vec3(7.0f, 11.0f, 15.0f)
                     );
@@ -283,11 +277,11 @@ protected:
                 glm::vec3(1.0f)
                 );
 
-        shader->set_mat4("model", bulbModel);
+        shader->set_mat4("model", bulb_model);
 
         bulb->draw(shader);
 
-        bloom.render(
+        m_bloom.render(
                 blur_shader,
                 bloom_final_shader,
                 true,
@@ -295,7 +289,7 @@ protected:
                 );
     }
 
-    void terminate() override { bloom.destroy(); }
+    void terminate() override { m_bloom.destroy(); }
 
     void end_draw() override { engine::core::Controller::get<engine::platform::PlatformController>()->swap_buffers(); }
 };
