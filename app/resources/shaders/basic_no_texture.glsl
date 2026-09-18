@@ -3,11 +3,9 @@
 
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
-layout (location = 2) in vec2 aTexCoords;
 
 out vec3 Normal;
 out vec3 FragPos;
-out vec2 TexCoords;
 
 uniform mat4 model;
 uniform mat4 view;
@@ -16,7 +14,6 @@ uniform mat4 projection;
 void main() {
     FragPos = vec3(model * vec4(aPos, 1.0));
     Normal = mat3(transpose(inverse(model))) * aNormal;
-    TexCoords = aTexCoords;
 
     gl_Position = projection * view * vec4(FragPos, 1.0);
 }
@@ -29,11 +26,8 @@ layout (location = 1) out vec4 BrightColor;
 
 in vec3 Normal;
 in vec3 FragPos;
-in vec2 TexCoords;
 
-uniform sampler2D texture_diffuse1;
-uniform vec3 texture_tint;
-
+uniform vec3 fallback_color;
 
 struct DirectionalLight {
     vec3 direction;
@@ -52,8 +46,7 @@ uniform bool emissive;
 uniform vec3 emissive_color;
 
 void main() {
-    vec4 tex_color = texture(texture_diffuse1, TexCoords);
-    vec3 object_color = mix(vec3(1.0), tex_color.rgb, tex_color.a) * texture_tint;
+    vec3 object_color = fallback_color;
 
     vec3 norm = normalize(Normal);
 
@@ -61,6 +54,7 @@ void main() {
 
     vec3 dir = normalize(-directional_light.direction);
     float directional_strength = max(dot(norm, dir), 0.0);
+
     vec3 directional =
         directional_strength *
         directional_light.color *
@@ -70,6 +64,7 @@ void main() {
     float point_strength = max(dot(norm, point_direction), 0.0);
 
     float distance = length(point_light.position - FragPos);
+
     float attenuation =
         1.0 /
         (1.0 + 0.09 * distance + 0.032 * distance * distance);

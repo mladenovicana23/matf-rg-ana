@@ -48,16 +48,16 @@ Mesh::Mesh(const std::vector<Vertex> &vertices, const std::vector<uint32_t> &ind
     m_textures = std::move(textures);
 }
 
-void Mesh::draw(const Shader *shader) {
-    bool has_diffuse_texture = false;
-
+bool Mesh::has_diffuse_texture() const {
     for (auto *texture: m_textures) {
-        if (texture->type() == TextureType::Diffuse) {
-            has_diffuse_texture = true;
-            break;
-        }
+        if (texture->type() == TextureType::Diffuse) { return true; }
     }
-    shader->set_int("has_diffuse_texture", has_diffuse_texture ? 1 : 0);
+
+    return false;
+}
+
+void Mesh::draw(const Shader *shader) {
+
     std::unordered_map<std::string_view, uint32_t> counts;
     std::string uniform_name;
     uniform_name.reserve(32);
