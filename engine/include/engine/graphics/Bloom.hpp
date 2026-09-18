@@ -25,24 +25,39 @@ public:
             resources::Shader *blur_shader,
             resources::Shader *final_shader,
             bool enabled,
-            float exposure
-            ) const;
+            float exposure) const;
 
 private:
+    struct HdrFramebuffer {
+        uint32_t framebuffer{0};
+        uint32_t color_buffers[2]{0, 0};
+        uint32_t depth_renderbuffer{0};
+    };
+
+    struct PingpongFramebuffers {
+        uint32_t framebuffers[2]{0, 0};
+        uint32_t color_buffers[2]{0, 0};
+    };
+
+    struct FullscreenQuad {
+        uint32_t vao{0};
+        uint32_t vbo{0};
+    };
+
+    HdrFramebuffer create_hdr_framebuffer() const;
+
+    PingpongFramebuffers create_pingpong_framebuffers() const;
+
+    FullscreenQuad create_fullscreen_quad() const;
+
     uint32_t m_width{0};
     uint32_t m_height{0};
 
-    uint32_t m_hdr_fbo{0};
-    uint32_t m_color_buffers[2]{0, 0};
-    uint32_t m_depth_rbo{0};
-
-    uint32_t m_pingpong_fbos[2]{0, 0};
-    uint32_t m_pingpong_color_buffers[2]{0, 0};
-
-    uint32_t m_quad_vao{0};
-    uint32_t m_quad_vbo{0};
+    HdrFramebuffer m_hdr;
+    PingpongFramebuffers m_pingpong;
+    FullscreenQuad m_quad;
 };
 
-}
+}// namespace engine::graphics
 
 #endif

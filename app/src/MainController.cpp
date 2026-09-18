@@ -9,13 +9,6 @@
 void MainController::initialize() {
     engine::graphics::OpenGL::enable_depth_testing();
 
-    auto platform =
-            engine::core::Controller::get<engine::platform::PlatformController>();
-
-    m_bloom.initialize(
-            platform->window()->width(),
-            platform->window()->height());
-
     auto camera =
             engine::core::Controller::get<engine::graphics::GraphicsController>()->camera();
 
@@ -59,14 +52,10 @@ void MainController::update_camera() {
 void MainController::update() { update_camera(); }
 
 void MainController::begin_draw() {
-    auto platform =
-            engine::core::Controller::get<engine::platform::PlatformController>();
+    auto graphics =
+            engine::core::Controller::get<engine::graphics::GraphicsController>();
 
-    m_bloom.resize(
-            platform->window()->width(),
-            platform->window()->height());
-
-    m_bloom.begin_scene();
+    graphics->bloom()->begin_scene();
 }
 
 void MainController::draw() {
@@ -290,13 +279,11 @@ void MainController::draw() {
 
     bulb->draw(shader);
 
-    m_bloom.render(
+    graphics->bloom()->render(
             blur_shader,
             bloom_final_shader,
             true,
             1.0f);
 }
-
-void MainController::terminate() { m_bloom.destroy(); }
 
 void MainController::end_draw() { engine::core::Controller::get<engine::platform::PlatformController>()->swap_buffers(); }

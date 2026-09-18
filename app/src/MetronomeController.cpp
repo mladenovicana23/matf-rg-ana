@@ -25,7 +25,7 @@ void MetronomeController::update() {
 
         if (m_metronome_event_time >= 4.0f) {
             m_metronome_event_active = false;
-            m_metronome_event_time = 0.s0f;
+            m_metronome_event_time = 0.0f;
         }
     }
 }

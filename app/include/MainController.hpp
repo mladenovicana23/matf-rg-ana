@@ -6,12 +6,9 @@
 #define MAINCONTROLLER_HPP
 
 #include <engine/core/Engine.hpp>
-#include <engine/graphics/Bloom.hpp>
 
 class MainController final : public engine::core::Controller {
 protected:
-    engine::graphics::Bloom m_bloom;
-
     void initialize() override;
 
     bool loop() override;
@@ -23,8 +20,6 @@ protected:
     void begin_draw() override;
 
     void draw() override;
-
-    void terminate() override;
 
     void end_draw() override;
 };
