@@ -1,0 +1,289 @@
+//
+// Created by matfrg on 9/18/26.
+//
+#include <LightingController.hpp>
+#include <MainController.hpp>
+#include <MetronomeController.hpp>
+#include <engine/graphics/GraphicsController.hpp>
+
+void MainController::initialize() {
+    engine::graphics::OpenGL::enable_depth_testing();
+
+    auto camera =
+            engine::core::Controller::get<engine::graphics::GraphicsController>()->camera();
+
+    camera->Position = glm::vec3(0.0f, 2.0f, 15.0f);
+    camera->Yaw = -90.0f;
+    camera->Pitch = 0.0f;
+    camera->rotate_camera(0.0f, 0.0f);
+}
+
+bool MainController::loop() {
+    const auto platform =
+            engine::core::Controller::get<engine::platform::PlatformController>();
+
+    if (platform->key(engine::platform::KeyId::KEY_ESCAPE).state() ==
+        engine::platform::Key::State::JustPressed) { return false; }
+
+    return true;
+}
+
+void MainController::update_camera() {
+    auto platform =
+            engine::core::Controller::get<engine::platform::PlatformController>();
+    auto camera =
+            engine::core::Controller::get<engine::graphics::GraphicsController>()->camera();
+
+    float dt = platform->dt();
+
+    if (platform->key(engine::platform::KEY_W).state() ==
+        engine::platform::Key::State::Pressed) { camera->move_camera(engine::graphics::Camera::Movement::FORWARD, dt); }
+
+    if (platform->key(engine::platform::KEY_S).state() ==
+        engine::platform::Key::State::Pressed) { camera->move_camera(engine::graphics::Camera::Movement::BACKWARD, dt); }
+
+    if (platform->key(engine::platform::KEY_A).state() ==
+        engine::platform::Key::State::Pressed) { camera->move_camera(engine::graphics::Camera::Movement::LEFT, dt); }
+
+    if (platform->key(engine::platform::KEY_D).state() ==
+        engine::platform::Key::State::Pressed) { camera->move_camera(engine::graphics::Camera::Movement::RIGHT, dt); }
+}
+
+void MainController::update() { update_camera(); }
+
+void MainController::begin_draw() {
+    auto graphics =
+            engine::core::Controller::get<engine::graphics::GraphicsController>();
+
+    graphics->bloom()->begin_scene();
+}
+
+void MainController::draw() {
+    auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
+    auto resources = engine::core::Controller::get<engine::resources::ResourcesController>();
+
+    auto lighting = engine::core::Controller::get<LightingController>();
+    auto metronome_controller = engine::core::Controller::get<MetronomeController>();
+
+    auto shader = resources->shader("basic");
+    auto no_texture_shader = resources->shader("basic_no_texture");
+    auto blur_shader = resources->shader("blur");
+    auto bloom_final_shader = resources->shader("bloom_final");
+
+    auto classroom = resources->model("classroom");
+    auto piano = resources->model("piano");
+    auto piano2 = resources->model("piano2");
+    auto metronome = resources->model("metronome");
+    auto window = resources->model("window");
+    auto painting = resources->model("painting");
+    auto lamp = resources->model("lamp");
+    auto bulb = resources->model("bulb");
+
+    shader->use();
+    shader->set_mat4("projection", graphics->projection_matrix());
+    shader->set_mat4("view", graphics->camera()->view_matrix());
+
+    shader->set_bool("emissive", false);
+    shader->set_vec3("emissive_color", glm::vec3(0.0f));
+
+    shader->set_vec3(
+            "directional_light.direction",
+            glm::vec3(-0.4f, -1.0f, -0.6f));
+
+    shader->set_vec3(
+            "directional_light.color",
+            glm::vec3(0.55f, 0.55f, 0.55f));
+
+    shader->set_vec3(
+            "point_light.position",
+            glm::vec3(-4.2f + lighting->point_light_x(), 2.005f, -2.5f));
+
+    if (lighting->point_light_enabled()) {
+        if (lighting->point_light_warm()) {
+            shader->set_vec3(
+                    "point_light.color",
+                    glm::vec3(0.8f, 0.7f, 0.55f));
+        } else {
+            shader->set_vec3(
+                    "point_light.color",
+                    glm::vec3(0.45f, 0.65f, 1.0f));
+        }
+    } else {
+        shader->set_vec3(
+                "point_light.color",
+                glm::vec3(0.0f));
+    }
+
+    no_texture_shader->use();
+
+    no_texture_shader->set_mat4(
+            "projection",
+            graphics->projection_matrix());
+
+    no_texture_shader->set_mat4(
+            "view",
+            graphics->camera()->view_matrix());
+
+    no_texture_shader->set_vec3(
+            "directional_light.direction",
+            glm::vec3(-0.4f, -1.0f, -0.6f));
+
+    no_texture_shader->set_vec3(
+            "directional_light.color",
+            glm::vec3(0.55f, 0.55f, 0.55f));
+
+    no_texture_shader->set_vec3(
+            "point_light.position",
+            glm::vec3(-4.2f + lighting->point_light_x(), 2.005f, -2.5f));
+
+    if (lighting->point_light_enabled()) {
+        if (lighting->point_light_warm()) {
+            no_texture_shader->set_vec3(
+                    "point_light.color",
+                    glm::vec3(0.8f, 0.7f, 0.55f));
+        } else {
+            no_texture_shader->set_vec3(
+                    "point_light.color",
+                    glm::vec3(0.45f, 0.65f, 1.0f));
+        }
+    } else {
+        no_texture_shader->set_vec3(
+                "point_light.color",
+                glm::vec3(0.0f));
+    }
+
+    no_texture_shader->set_bool("emissive", false);
+    no_texture_shader->set_vec3("emissive_color", glm::vec3(0.0f));
+    no_texture_shader->set_vec3("fallback_color", glm::vec3(1.0f));
+
+    shader->use();
+    shader->set_vec3("texture_tint", glm::vec3(0.75f, 0.45f, 0.25f));
+    shader->set_mat4("model", glm::mat4(1.0f));
+
+    no_texture_shader->use();
+    no_texture_shader->set_mat4("model", glm::mat4(1.0f));
+
+    classroom->draw(shader, no_texture_shader);
+
+    shader->use();
+    shader->set_vec3("texture_tint", glm::vec3(1.0f, 1.0f, 1.0f));
+
+    glm::mat4 piano_model = glm::mat4(1.0f);
+    piano_model = glm::translate(piano_model, glm::vec3(-2.0f, 1.6f, -1.5f));
+    piano_model = glm::scale(piano_model, glm::vec3(0.05f));
+
+    shader->set_mat4("model", piano_model);
+    piano->draw(shader);
+
+    glm::mat4 piano2_model = glm::mat4(1.0f);
+    piano2_model = glm::translate(piano2_model, glm::vec3(2.5f, 0.7f, -2.0f));
+    piano2_model = glm::rotate(
+            piano2_model,
+            glm::radians(180.0f),
+            glm::vec3(0.0f, 1.0f, 0.0f));
+
+    piano2_model = glm::scale(piano2_model, glm::vec3(0.07f));
+    shader->set_mat4("model", piano2_model);
+    piano2->draw(shader);
+
+    glm::vec3 metronome_position = glm::vec3(1.8f, 1.8f, -2.0f);
+
+    if (metronome_controller->event_active()) {
+        if (metronome_controller->event_time() >= 1.0f &&
+            metronome_controller->event_time() < 3.0f) {
+            metronome_position.x -= 0.3f;
+        } else if (metronome_controller->event_time() >= 3.0f) {
+            metronome_position.x += 0.3f;
+        }
+    }
+
+    glm::mat4 metronome_model = glm::mat4(1.0f);
+    metronome_model = glm::translate(
+            metronome_model,
+            metronome_position);
+
+    metronome_model = glm::scale(metronome_model, glm::vec3(1.2f));
+    shader->set_vec3("fallback_color", glm::vec3(0.08f, 0.06f, 0.04f));
+    shader->set_vec3("texture_tint", glm::vec3(1.0f));
+    shader->set_mat4("model", metronome_model);
+    metronome->draw(shader);
+
+    glm::mat4 window_model = glm::mat4(1.0f);
+    window_model = glm::translate(window_model, glm::vec3(5.0f, 2.0f, 0.3f));
+    window_model = glm::rotate(
+            window_model,
+            glm::radians(-90.0f),
+            glm::vec3(0.0f, 1.0f, 0.0f));
+    window_model = glm::scale(window_model, glm::vec3(0.008f));
+
+    shader->set_vec3("fallback_color", glm::vec3(0.35f, 0.18f, 0.08f));
+    shader->set_mat4("model", window_model);
+    window->draw(shader);
+
+    glm::mat4 painting_model = glm::mat4(1.0f);
+    painting_model = glm::translate(painting_model, glm::vec3(0.0f, 2.2f, -3.95f));
+    painting_model = glm::rotate(
+            painting_model,
+            glm::radians(180.0f),
+            glm::vec3(0.0f, 0.0f, 1.0f));
+    painting_model = glm::scale(painting_model, glm::vec3(0.009f));
+
+    shader->set_vec3("texture_tint", glm::vec3(1.0f));
+    shader->set_vec3("fallback_color", glm::vec3(1.0f));
+    shader->set_mat4("model", painting_model);
+    painting->draw(shader);
+
+    glm::mat4 lamp_model = glm::mat4(1.0f);
+    lamp_model = glm::translate(lamp_model, glm::vec3(-4.2f, 0.0f, -2.5f));
+    lamp_model = glm::scale(lamp_model, glm::vec3(0.35f));
+
+    shader->set_bool("emissive", false);
+    shader->set_vec3("emissive_color", glm::vec3(0.0f));
+
+    shader->set_vec3("texture_tint", glm::vec3(1.0f));
+    shader->set_vec3("fallback_color", glm::vec3(1.0f));
+    shader->set_mat4("model", lamp_model);
+    lamp->draw(shader);
+
+    glm::mat4 bulb_model = glm::mat4(1.0f);
+
+    bulb_model = glm::translate(
+            bulb_model,
+            glm::vec3(-4.2f, 2.005f, -2.5f));
+
+    bulb_model = glm::scale(bulb_model, glm::vec3(0.15f));
+
+    shader->set_bool("emissive", lighting->point_light_enabled());
+
+    if (lighting->point_light_enabled()) {
+        shader->set_vec3(
+                "emissive_color",
+                lighting->point_light_warm()
+                        ? glm::vec3(15.0f, 12.0f, 7.0f)
+                        : glm::vec3(7.0f, 11.0f, 15.0f));
+    } else {
+        shader->set_vec3(
+                "emissive_color",
+                glm::vec3(0.0f));
+    }
+
+    shader->set_vec3(
+            "fallback_color",
+            glm::vec3(1.0f));
+
+    shader->set_vec3(
+            "texture_tint",
+            glm::vec3(1.0f));
+
+    shader->set_mat4("model", bulb_model);
+
+    bulb->draw(shader);
+
+    graphics->bloom()->render(
+            blur_shader,
+            bloom_final_shader,
+            true,
+            1.0f);
+}
+
+void MainController::end_draw() { engine::core::Controller::get<engine::platform::PlatformController>()->swap_buffers(); }

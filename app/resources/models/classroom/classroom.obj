@@ -1,0 +1,60 @@
+# Simple piano classroom
+# Coordinate system: Y is up
+
+o classroom
+
+mtllib classroom.mtl
+
+# Floor vertices
+v -5.0 0.0 -4.0
+v  5.0 0.0 -4.0
+v  5.0 0.0  4.0
+v -5.0 0.0  4.0
+
+# Back wall vertices
+v -5.0 0.0 -4.0
+v  5.0 0.0 -4.0
+v  5.0 4.0 -4.0
+v -5.0 4.0 -4.0
+
+# Left wall vertices
+v -5.0 0.0 -4.0
+v -5.0 0.0  4.0
+v -5.0 4.0  4.0
+v -5.0 4.0 -4.0
+
+# Right wall vertices
+v 5.0 0.0  4.0
+v 5.0 0.0 -4.0
+v 5.0 4.0 -4.0
+v 5.0 4.0  4.0
+
+# Floor texture coordinates
+vt 0.0 0.0
+vt 1.0 0.0
+vt 1.0 1.0
+vt 0.0 1.0
+
+# Normals
+vn 0.0 1.0 0.0
+vn 0.0 0.0 1.0
+vn 1.0 0.0 0.0
+vn -1.0 0.0 0.0
+
+# Floor
+usemtl parquet
+f 1/1/1 3/3/1 2/2/1
+f 1/1/1 4/4/1 3/3/1
+
+# Back wall
+usemtl wall
+f 5//2 6//2 7//2
+f 5//2 7//2 8//2
+
+# Left wall
+f 9//3 10//3 11//3
+f 9//3 11//3 12//3
+
+# Right wall
+f 13//4 14//4 15//4
+f 13//4 15//4 16//4

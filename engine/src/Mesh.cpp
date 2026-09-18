@@ -48,7 +48,16 @@ Mesh::Mesh(const std::vector<Vertex> &vertices, const std::vector<uint32_t> &ind
     m_textures = std::move(textures);
 }
 
+bool Mesh::has_diffuse_texture() const {
+    for (auto *texture: m_textures) {
+        if (texture->type() == TextureType::Diffuse) { return true; }
+    }
+
+    return false;
+}
+
 void Mesh::draw(const Shader *shader) {
+
     std::unordered_map<std::string_view, uint32_t> counts;
     std::string uniform_name;
     uniform_name.reserve(32);
@@ -67,8 +76,6 @@ void Mesh::draw(const Shader *shader) {
     CHECKED_GL_CALL(glBindVertexArray, 0);
 }
 
-void Mesh::destroy() {
-    CHECKED_GL_CALL(glDeleteVertexArrays, 1, &m_vao);
-}
+void Mesh::destroy() { CHECKED_GL_CALL(glDeleteVertexArrays, 1, &m_vao); }
 
 }// namespace engine::resources

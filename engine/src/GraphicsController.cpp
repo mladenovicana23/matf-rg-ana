@@ -17,6 +17,11 @@ void GraphicsController::initialize() {
     RG_GUARANTEE(opengl_initialized, "OpenGL failed to init!");
 
     auto platform = engine::core::Controller::get<platform::PlatformController>();
+
+    m_bloom.initialize(
+            platform->window()->width(),
+            platform->window()->height());
+
     auto handle = platform->window()->handle_();
     m_perspective_params.FOV = glm::radians(m_camera.Zoom);
     m_perspective_params.Width = static_cast<float>(platform->window()->width());
@@ -42,6 +47,8 @@ void GraphicsController::initialize() {
 }
 
 void GraphicsController::terminate() {
+    m_bloom.destroy();
+
     if (ImGui::GetCurrentContext()) {
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
@@ -54,12 +61,14 @@ void GraphicsPlatformEventObserver::on_window_resize(int width, int height) {
     m_graphics->perspective_params().Height = static_cast<float>(height);
     m_graphics->orthographic_params().Right = static_cast<float>(width);
     m_graphics->orthographic_params().Top = static_cast<float>(height);
+    m_graphics->bloom()->resize(
+            static_cast<uint32_t>(width),
+            static_cast<uint32_t>(height));
+
     CHECKED_GL_CALL(glViewport, 0, 0, width, height);
 }
 
-std::string_view GraphicsController::name() const {
-    return "GraphicsController";
-}
+std::string_view GraphicsController::name() const { return "GraphicsController"; }
 
 void GraphicsController::begin_gui() {
     ImGui_ImplOpenGL3_NewFrame();
